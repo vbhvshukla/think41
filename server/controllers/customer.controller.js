@@ -4,7 +4,7 @@ const Order = require('../models/Order');
 
 const getCustomers = async (req, res) => {
     try {
-        console.log("Starting customer fetch...");
+        console.log("Starting customer fetch with order count filters...");
         const startTime = Date.now();
         
         // Extract pagination parameters from query
@@ -12,11 +12,17 @@ const getCustomers = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
+        // Extract order count filter parameters
+        const orderCount = req.query.orderCount; // exact order count
+        const minOrders = req.query.minOrders; // minimum orders
+        const maxOrders = req.query.maxOrders; // maximum orders
+        const hasOrders = req.query.hasOrders; // 'true' for customers with orders, 'false' for no orders
+
         // Optimized aggregation pipeline using $facet for parallel processing
         const pipeline = [
             {
                 $facet: {
-                    // Get paginated customers
+                    // Get filtered customers with order counts
                     "customers": [
                         {
                             $project: {
@@ -27,9 +33,6 @@ const getCustomers = async (req, res) => {
                                 email: 1
                             }
                         },
-                        { $sort: { id: 1 } },
-                        { $skip: skip },
-                        { $limit: limit },
                         {
                             $lookup: {
                                 from: 'orders',
@@ -56,6 +59,43 @@ const getCustomers = async (req, res) => {
                                 }
                             }
                         },
+                        // Apply order count filters
+                        {
+                            $match: (() => {
+                                let matchConditions = {};
+                                
+                                // Exact order count filter
+                                if (orderCount !== undefined) {
+                                    matchConditions.order_count = parseInt(orderCount);
+                                }
+                                
+                                // Range filters
+                                if (minOrders !== undefined || maxOrders !== undefined) {
+                                    matchConditions.order_count = {};
+                                    if (minOrders !== undefined) {
+                                        matchConditions.order_count.$gte = parseInt(minOrders);
+                                    }
+                                    if (maxOrders !== undefined) {
+                                        matchConditions.order_count.$lte = parseInt(maxOrders);
+                                    }
+                                }
+                                
+                                // Has orders filter (boolean)
+                                if (hasOrders !== undefined) {
+                                    if (hasOrders.toLowerCase() === 'true') {
+                                        matchConditions.order_count = { $gt: 0 };
+                                    } else if (hasOrders.toLowerCase() === 'false') {
+                                        matchConditions.order_count = 0;
+                                    }
+                                }
+                                
+                                return Object.keys(matchConditions).length > 0 ? matchConditions : {};
+                            })()
+                        },
+                        // Sort by order count (descending) then by id
+                        { $sort: { order_count: -1, id: 1 } },
+                        { $skip: skip },
+                        { $limit: limit },
                         {
                             $project: {
                                 _id: 1,
@@ -68,8 +108,68 @@ const getCustomers = async (req, res) => {
                             }
                         }
                     ],
-                    // Get total count in parallel
+                    // Get total count with same filters in parallel
                     "totalCount": [
+                        {
+                            $project: {
+                                id: 1
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'orders',
+                                let: { customerId: '$id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: { $eq: ['$user_id', '$$customerId'] }
+                                        }
+                                    },
+                                    { $count: "count" }
+                                ],
+                                as: 'orderData'
+                            }
+                        },
+                        {
+                            $addFields: {
+                                order_count: {
+                                    $ifNull: [
+                                        { $arrayElemAt: ['$orderData.count', 0] },
+                                        0
+                                    ]
+                                }
+                            }
+                        },
+                        // Apply same filters for count
+                        {
+                            $match: (() => {
+                                let matchConditions = {};
+                                
+                                if (orderCount !== undefined) {
+                                    matchConditions.order_count = parseInt(orderCount);
+                                }
+                                
+                                if (minOrders !== undefined || maxOrders !== undefined) {
+                                    matchConditions.order_count = {};
+                                    if (minOrders !== undefined) {
+                                        matchConditions.order_count.$gte = parseInt(minOrders);
+                                    }
+                                    if (maxOrders !== undefined) {
+                                        matchConditions.order_count.$lte = parseInt(maxOrders);
+                                    }
+                                }
+                                
+                                if (hasOrders !== undefined) {
+                                    if (hasOrders.toLowerCase() === 'true') {
+                                        matchConditions.order_count = { $gt: 0 };
+                                    } else if (hasOrders.toLowerCase() === 'false') {
+                                        matchConditions.order_count = 0;
+                                    }
+                                }
+                                
+                                return Object.keys(matchConditions).length > 0 ? matchConditions : {};
+                            })()
+                        },
                         { $count: "count" }
                     ]
                 }
@@ -90,6 +190,13 @@ const getCustomers = async (req, res) => {
         const endTime = Date.now();
         console.log(`✅ Fetched ${customers.length} customers in ${endTime - startTime}ms`);
 
+        // Build filter summary for response
+        const appliedFilters = {};
+        if (orderCount !== undefined) appliedFilters.exact_order_count = parseInt(orderCount);
+        if (minOrders !== undefined) appliedFilters.min_orders = parseInt(minOrders);
+        if (maxOrders !== undefined) appliedFilters.max_orders = parseInt(maxOrders);
+        if (hasOrders !== undefined) appliedFilters.has_orders = hasOrders.toLowerCase() === 'true';
+
         return res.status(200).json({
             success: true,
             data: {
@@ -101,6 +208,15 @@ const getCustomers = async (req, res) => {
                     per_page: limit,
                     has_next_page: hasNextPage,
                     has_prev_page: hasPrevPage
+                },
+                filters: {
+                    applied: appliedFilters,
+                    available: {
+                        orderCount: "Exact number of orders (e.g., ?orderCount=0)",
+                        minOrders: "Minimum number of orders (e.g., ?minOrders=1)", 
+                        maxOrders: "Maximum number of orders (e.g., ?maxOrders=5)",
+                        hasOrders: "true/false for customers with/without orders (e.g., ?hasOrders=false)"
+                    }
                 }
             },
             performance: {

@@ -1,144 +1,795 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="think41App">
+<html ng-app="customerApp">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Think41 - AngularJS App</title>
+    <title>Customer Management System</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- AngularJS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .form-group {
-            margin-bottom: 20px;
+        
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        input[type="text"], input[type="email"] {
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .search-input {
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .loading-spinner {
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-badge {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
         }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
+        
+        .status-badge:hover::before {
+            left: 100%;
         }
-        button:hover {
-            background-color: #0056b3;
+        
+        .order-count-glow {
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
         }
-        .success {
-            color: green;
-            margin-top: 10px;
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+            to { box-shadow: 0 0 30px rgba(102, 126, 234, 0.8); }
         }
-        .error {
-            color: red;
-            margin-top: 10px;
+        
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .user-list {
-            margin-top: 30px;
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
         }
-        .user-item {
-            background: #f8f9fa;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 4px;
-            border-left: 4px solid #007bff;
+        
+        .slide-in-left {
+            animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInLeft {
+            from { 
+                opacity: 0; 
+                transform: translateX(-50px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0);
+            }
+        }
+        
+        .scale-in {
+            animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.9);
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1);
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         }
     </style>
 </head>
-<body ng-controller="MainController">
-    <div class="container">
-        <h1>Think41 - Simple AngularJS + Node.js App</h1>
+<body class="bg-gray-50 min-h-screen">
+    <div ng-controller="CustomerController" class="min-h-screen">
         
-        <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" id="name" ng-model="newUser.name" placeholder="Enter your name">
+        <!-- Header -->
+        <div class="glass-effect sticky top-0 z-50 mb-8">
+            <div class="container mx-auto px-6 py-8">
+                <div class="text-center">
+                    <h1 class="text-5xl font-black bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-3">
+                        <i class="fas fa-users mr-4"></i>Customer Management
+                    </h1>
+                    <p class="text-xl text-gray-600 font-medium">Advanced Customer Analytics & Management Dashboard</p>
+                </div>
+            </div>
         </div>
         
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" ng-model="newUser.email" placeholder="Enter your email">
-        </div>
-        
-        <button ng-click="addUser()">Add User</button>
-        <button ng-click="getUsers()">Get Users from Server</button>
-        
-        <div ng-if="message" class="success">{{message}}</div>
-        <div ng-if="error" class="error">{{error}}</div>
-        
-        <div class="user-list" ng-if="users.length > 0">
-            <h3>Users:</h3>
-            <div ng-repeat="user in users" class="user-item">
-                <strong>{{user.name}}</strong> - {{user.email}}
-                <small ng-if="user.id"> (ID: {{user.id}})</small>
+        <div class="container mx-auto px-6 pb-8">
+            
+            <!-- Enhanced Controls -->
+            <div class="glass-effect rounded-3xl p-8 mb-8 shadow-2xl fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    
+                    <!-- Search -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
+                            <i class="fas fa-search mr-2"></i>Search Customers
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                ng-model="searchQuery" 
+                                ng-change="searchCustomers()"
+                                placeholder="Search by name or email..." 
+                                class="search-input w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-purple-500 focus:outline-none text-lg font-medium bg-white/80"
+                            />
+                            <i class="fas fa-search absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Items per page -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
+                            <i class="fas fa-list mr-2"></i>Items per Page
+                        </label>
+                        <select 
+                            ng-model="itemsPerPage" 
+                            ng-change="changePageSize()"
+                            class="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-purple-500 focus:outline-none text-lg font-medium bg-white/80"
+                        >
+                            <option value="10">10 per page</option>
+                            <option value="20">20 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    
+                    <!-- Order Filter -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
+                            <i class="fas fa-filter mr-2"></i>Filter by Order Count
+                        </label>
+                        <select 
+                            ng-model="orderFilter" 
+                            ng-change="applyFilters()"
+                            class="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-purple-500 focus:outline-none text-lg font-medium bg-white/80"
+                        >
+                            <option value="">All Customers</option>
+                            <option value="0">No Orders (Prospects)</option>
+                            <option value="1-5">1-5 Orders (New)</option>
+                            <option value="6-10">6-10 Orders (Regular)</option>
+                            <option value="10+">10+ Orders (VIP)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Sort by -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
+                            <i class="fas fa-sort mr-2"></i>Sort by
+                        </label>
+                        <select 
+                            ng-model="sortBy" 
+                            ng-change="applySorting()"
+                            class="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-purple-500 focus:outline-none text-lg font-medium bg-white/80"
+                        >
+                            <option value="order_count">Order Count</option>
+                            <option value="name">Name</option>
+                            <option value="email">Email</option>
+                            <option value="id">Customer ID</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Quick Filters -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-700 mb-4 uppercase tracking-wider">
+                        <i class="fas fa-bolt mr-2"></i>Quick Filters
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button 
+                            ng-click="quickFilter('no-orders')"
+                            class="px-6 py-3 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                            <i class="fas fa-exclamation-triangle mr-2"></i>No Orders
+                        </button>
+                        <button 
+                            ng-click="quickFilter('has-orders')"
+                            class="px-6 py-3 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                            <i class="fas fa-check-circle mr-2"></i>Has Orders
+                        </button>
+                        <button 
+                            ng-click="quickFilter('high-value')"
+                            class="px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                            <i class="fas fa-crown mr-2"></i>High Value
+                        </button>
+                        <button 
+                            ng-click="clearFilters()"
+                            class="px-6 py-3 bg-gradient-to-r from-gray-400 to-gray-600 text-white rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                            <i class="fas fa-times mr-2"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-4">
+                    <button 
+                        ng-click="loadCustomers()" 
+                        class="btn-gradient text-white px-8 py-4 rounded-2xl font-bold text-lg"
+                        ng-disabled="loading"
+                    >
+                        <i class="fas fa-sync-alt mr-2" ng-class="{'animate-spin': loading}"></i>
+                        {{loading ? 'Loading...' : 'Refresh Data'}}
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 slide-in-left" ng-if="pagination.total_customers">
+                <div class="glass-effect rounded-3xl p-8 text-center shadow-2xl card-hover">
+                    <div class="text-5xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                        {{pagination.total_customers | number}}
+                    </div>
+                    <div class="text-lg font-bold text-gray-600 uppercase tracking-wider">
+                        <i class="fas fa-users mr-2"></i>Total Customers
+                    </div>
+                </div>
+                
+                <div class="glass-effect rounded-3xl p-8 text-center shadow-2xl card-hover">
+                    <div class="text-5xl font-black bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-3">
+                        {{customers.length | number}}
+                    </div>
+                    <div class="text-lg font-bold text-gray-600 uppercase tracking-wider">
+                        <i class="fas fa-eye mr-2"></i>Currently Showing
+                    </div>
+                </div>
+                
+                <div class="glass-effect rounded-3xl p-8 text-center shadow-2xl card-hover" ng-if="performance.execution_time_ms">
+                    <div class="text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+                        {{performance.execution_time_ms}}ms
+                    </div>
+                    <div class="text-lg font-bold text-gray-600 uppercase tracking-wider">
+                        <i class="fas fa-bolt mr-2"></i>Query Speed
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div ng-if="loading" class="text-center py-20">
+                <div class="loading-spinner border-4 border-gray-200 border-t-4 border-t-purple-600 rounded-full w-16 h-16 mx-auto mb-6"></div>
+                <h3 class="text-2xl font-bold text-white mb-2">Loading Customers...</h3>
+                <p class="text-lg text-white/80">Please wait while we fetch your data</p>
+            </div>
+            
+            <!-- Error State -->
+            <div ng-if="error" class="glass-effect rounded-3xl p-8 mb-8 border-l-8 border-red-500 bg-red-50">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-red-500 text-3xl mr-4"></i>
+                    <div>
+                        <h3 class="text-xl font-bold text-red-800 mb-2">Error Loading Data</h3>
+                        <p class="text-red-700 text-lg">{{error}}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customer Cards Grid -->
+            <div ng-if="!loading && !error && customers.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8 scale-in">
+                <div ng-repeat="customer in customers" class="glass-effect rounded-3xl p-8 shadow-2xl card-hover fade-in">
+                    
+                    <!-- Customer Header -->
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-black text-gray-800 mb-2">
+                                <i class="fas fa-user mr-2 text-purple-600"></i>{{customer.full_name}}
+                            </h3>
+                            <p class="text-lg text-gray-600 font-medium mb-1">
+                                <i class="fas fa-envelope mr-2 text-blue-500"></i>{{customer.email}}
+                            </p>
+                            <p class="text-lg text-gray-500 font-medium">
+                                <i class="fas fa-id-badge mr-2 text-green-500"></i>ID: {{customer.id}}
+                            </p>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div class="status-badge px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider" ng-class="{
+                            'bg-gradient-to-r from-red-400 to-red-600 text-white': customer.status === 'Prospect',
+                            'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white': customer.status === 'New Customer',
+                            'bg-gradient-to-r from-green-400 to-green-600 text-white': customer.status === 'Regular Customer',
+                            'bg-gradient-to-r from-purple-400 to-purple-600 text-white': customer.status === 'VIP Customer'
+                        }">
+                            {{customer.status}}
+                        </div>
+                    </div>
+                    
+                    <!-- Order Count -->
+                    <div class="order-count-glow bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-center text-white mb-6">
+                        <div class="text-4xl font-black mb-2">{{customer.order_count}}</div>
+                        <div class="text-lg font-bold uppercase tracking-wider opacity-90">
+                            <i class="fas fa-shopping-cart mr-2"></i>Orders
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <button 
+                            ng-click="viewCustomerDetails(customer.id)"
+                            class="py-3 px-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl font-bold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                        >
+                            <i class="fas fa-eye mb-1"></i><br>View
+                        </button>
+                        <button 
+                            ng-click="viewCustomerOrders(customer.id)"
+                            class="py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl font-bold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                        >
+                            <i class="fas fa-shopping-bag mb-1"></i><br>Orders
+                        </button>
+                        <button 
+                            ng-click="contactCustomer(customer.id)"
+                            class="py-3 px-4 bg-gradient-to-r from-green-500 to-green-700 text-white rounded-xl font-bold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                        >
+                            <i class="fas fa-phone mb-1"></i><br>Contact
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No Results -->
+            <div ng-if="!loading && !error && customers.length === 0" class="text-center py-20">
+                <i class="fas fa-search text-6xl text-gray-400 mb-6"></i>
+                <h3 class="text-3xl font-bold text-white mb-4">No Customers Found</h3>
+                <p class="text-xl text-white/80 mb-8">Try adjusting your search or filter criteria</p>
+                <button ng-click="clearFilters()" class="btn-gradient text-white px-8 py-4 rounded-2xl font-bold text-lg">
+                    <i class="fas fa-refresh mr-2"></i>Clear Filters
+                </button>
+            </div>
+            
+            <!-- Enhanced Pagination -->
+            <div ng-if="pagination && pagination.total_pages > 1" class="glass-effect rounded-3xl p-8 text-center shadow-2xl fade-in">
+                <div class="mb-6">
+                    <p class="text-xl font-bold text-gray-700">
+                        <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                        Showing {{((pagination.current_page - 1) * pagination.per_page) + 1}} to 
+                        {{Math.min(pagination.current_page * pagination.per_page, pagination.total_customers)}} 
+                        of {{pagination.total_customers}} customers
+                    </p>
+                </div>
+                
+                <div class="flex justify-center items-center gap-3 flex-wrap">
+                    <!-- First Page -->
+                    <button 
+                        ng-click="goToPage(1)" 
+                        ng-disabled="pagination.current_page === 1"
+                        class="px-4 py-3 bg-white border-2 border-gray-300 rounded-xl font-bold transition-all duration-300 hover:border-purple-500 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                    
+                    <!-- Previous Page -->
+                    <button 
+                        ng-click="goToPage(pagination.current_page - 1)" 
+                        ng-disabled="!pagination.has_prev_page"
+                        class="px-6 py-3 bg-white border-2 border-gray-300 rounded-xl font-bold transition-all duration-300 hover:border-purple-500 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="fas fa-chevron-left mr-2"></i>Previous
+                    </button>
+                    
+                    <!-- Page Numbers -->
+                    <button 
+                        ng-repeat="page in getPageNumbers()" 
+                        ng-click="goToPage(page)"
+                        class="px-4 py-3 rounded-xl font-bold transition-all duration-300"
+                        ng-class="{
+                            'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg': page === pagination.current_page,
+                            'bg-white border-2 border-gray-300 hover:border-purple-500 hover:bg-purple-50': page !== pagination.current_page
+                        }"
+                    >
+                        {{page}}
+                    </button>
+                    
+                    <!-- Next Page -->
+                    <button 
+                        ng-click="goToPage(pagination.current_page + 1)" 
+                        ng-disabled="!pagination.has_next_page"
+                        class="px-6 py-3 bg-white border-2 border-gray-300 rounded-xl font-bold transition-all duration-300 hover:border-purple-500 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Next<i class="fas fa-chevron-right ml-2"></i>
+                    </button>
+                    
+                    <!-- Last Page -->
+                    <button 
+                        ng-click="goToPage(pagination.total_pages)" 
+                        ng-disabled="pagination.current_page === pagination.total_pages"
+                        class="px-4 py-3 bg-white border-2 border-gray-300 rounded-xl font-bold transition-all duration-300 hover:border-purple-500 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Performance Info -->
+            <div ng-if="performance.execution_time_ms" class="glass-effect rounded-3xl p-6 mt-8 text-center border-l-8 border-green-500 bg-green-50 shadow-2xl">
+                <div class="flex items-center justify-center">
+                    <i class="fas fa-tachometer-alt text-green-600 text-2xl mr-3"></i>
+                    <span class="text-lg font-bold text-green-800">
+                        Query executed in {{performance.execution_time_ms}}ms using {{performance.method}}
+                        <span ng-if="performance.total_customers"> - {{performance.total_customers}} total customers</span>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
+    
+    <!-- Include AngularJS App -->
+    <script src="js/app.js"></script>
+</body>
+</html>
+            <p class="text-gray-600">Browse and search through customer database with order analytics</p>
+        </div>
 
-    <script>
-        // Simple AngularJS App
-        angular.module('think41App', [])
-        .controller('MainController', ['$scope', '$http', function($scope, $http) {
-            $scope.users = [];
-            $scope.newUser = {};
-            $scope.message = '';
-            $scope.error = '';
+        <!-- Search and Filters Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Name/Email Search -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search by Name or Email</label>
+                    <input 
+                        type="text" 
+                        ng-model="searchQuery" 
+                        ng-change="searchCustomers()"
+                        placeholder="Enter name or email..."
+                        class="search-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                </div>
+
+                <!-- Order Count Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Order Count Filter</label>
+                    <select 
+                        ng-model="orderFilter" 
+                        ng-change="applyFilters()"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">All Customers</option>
+                        <option value="0">No Orders (0)</option>
+                        <option value="1-5">1-5 Orders</option>
+                        <option value="6-10">6-10 Orders</option>
+                        <option value="10+">10+ Orders</option>
+                    </select>
+                </div>
+
+                <!-- Sort Options -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                    <select 
+                        ng-model="sortBy" 
+                        ng-change="applySorting()"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="order_count">Order Count (High to Low)</option>
+                        <option value="name">Name (A to Z)</option>
+                        <option value="email">Email (A to Z)</option>
+                        <option value="id">Customer ID</option>
+                    </select>
+                </div>
+
+                <!-- Results Per Page -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Results Per Page</label>
+                    <select 
+                        ng-model="itemsPerPage" 
+                        ng-change="changePageSize()"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="10">10 per page</option>
+                        <option value="20">20 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quick Filter Buttons -->
+            <div class="mt-4 flex flex-wrap gap-2">
+                <button 
+                    ng-click="quickFilter('no-orders')" 
+                    class="px-4 py-2 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors">
+                    🚫 No Orders
+                </button>
+                <button 
+                    ng-click="quickFilter('has-orders')" 
+                    class="px-4 py-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors">
+                    ✅ Has Orders
+                </button>
+                <button 
+                    ng-click="quickFilter('high-value')" 
+                    class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors">
+                    💎 High Value (10+ Orders)
+                </button>
+                <button 
+                    ng-click="clearFilters()" 
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors">
+                    🔄 Clear Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" ng-if="stats">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-2xl font-bold text-blue-600">{{stats.totalCustomers | number}}</div>
+                <div class="text-gray-600">Total Customers</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-2xl font-bold text-green-600">{{stats.withOrders | number}}</div>
+                <div class="text-gray-600">With Orders</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-2xl font-bold text-red-600">{{stats.withoutOrders | number}}</div>
+                <div class="text-gray-600">No Orders</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-2xl font-bold text-purple-600">{{performance.execution_time_ms}}ms</div>
+                <div class="text-gray-600">Query Time</div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div ng-if="loading" class="flex justify-center items-center py-16">
+            <div class="loading-spinner border-4 border-gray-200 border-t-4 border-blue-500 rounded-full w-12 h-12"></div>
+            <span class="ml-3 text-gray-600">Loading customers...</span>
+        </div>
+
+        <!-- Error Message -->
+        <div ng-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <strong>Error:</strong> {{error}}
+        </div>
+
+        <!-- Customer Cards Grid -->
+        <div ng-if="!loading && customers.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div ng-repeat="customer in customers" class="customer-card bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                
+                <!-- Customer Header -->
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-1">
+                            {{customer.full_name || (customer.first_name + ' ' + customer.last_name)}}
+                        </h3>
+                        <p class="text-sm text-gray-500">ID: #{{customer.id}}</p>
+                    </div>
+                    <div class="order-count-badge px-3 py-1 rounded-full text-sm font-medium"
+                         ng-class="{
+                             'bg-red-100 text-red-700': customer.order_count === 0,
+                             'bg-yellow-100 text-yellow-700': customer.order_count > 0 && customer.order_count <= 5,
+                             'bg-green-100 text-green-700': customer.order_count > 5 && customer.order_count <= 15,
+                             'bg-purple-100 text-purple-700': customer.order_count > 15
+                         }">
+                        {{customer.order_count}} orders
+                    </div>
+                </div>
+
+                <!-- Customer Details -->
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <span class="text-gray-400 mr-2">📧</span>
+                        <span class="text-sm text-gray-600 truncate">{{customer.email}}</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <span class="text-gray-400 mr-2">📊</span>
+                        <span class="text-sm text-gray-600">
+                            <span ng-if="customer.order_count === 0">No purchase history</span>
+                            <span ng-if="customer.order_count === 1">1 order placed</span>
+                            <span ng-if="customer.order_count > 1">{{customer.order_count}} orders placed</span>
+                        </span>
+                    </div>
+
+                    <!-- Customer Status -->
+                    <div class="flex items-center">
+                        <span class="text-gray-400 mr-2">🎯</span>
+                        <span class="text-sm font-medium"
+                              ng-class="{
+                                  'text-red-600': customer.order_count === 0,
+                                  'text-yellow-600': customer.order_count > 0 && customer.order_count <= 5,
+                                  'text-green-600': customer.order_count > 5 && customer.order_count <= 15,
+                                  'text-purple-600': customer.order_count > 15
+                              }">
+                            <span ng-if="customer.order_count === 0">Prospect</span>
+                            <span ng-if="customer.order_count > 0 && customer.order_count <= 5">New Customer</span>
+                            <span ng-if="customer.order_count > 5 && customer.order_count <= 15">Regular Customer</span>
+                            <span ng-if="customer.order_count > 15">VIP Customer</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex space-x-2">
+                        <button 
+                            ng-click="viewCustomerDetails(customer.id)"
+                            class="flex-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors">
+                            View Details
+                        </button>
+                        <button 
+                            ng-if="customer.order_count > 0"
+                            ng-click="viewCustomerOrders(customer.id)"
+                            class="flex-1 px-3 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors">
+                            View Orders
+                        </button>
+                        <button 
+                            ng-if="customer.order_count === 0"
+                            ng-click="contactCustomer(customer.id)"
+                            class="flex-1 px-3 py-2 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 transition-colors">
+                            Contact
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div ng-if="!loading && customers.length === 0" class="text-center py-16">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-medium text-gray-700 mb-2">No customers found</h3>
+            <p class="text-gray-500">Try adjusting your search criteria or filters</p>
+        </div>
+
+        <!-- Pagination -->
+        <div ng-if="pagination && pagination.total_pages > 1" class="flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-lg shadow-md">
             
-            // Add user to local list
-            $scope.addUser = function() {
-                if ($scope.newUser.name && $scope.newUser.email) {
-                    $scope.users.push({
-                        name: $scope.newUser.name,
-                        email: $scope.newUser.email
-                    });
-                    $scope.newUser = {};
-                    $scope.message = 'User added to local list!';
-                    $scope.error = '';
-                } else {
-                    $scope.error = 'Please enter both name and email';
-                    $scope.message = '';
-                }
-            };
-            
-            // Get users from server
-            $scope.getUsers = function() {
-                $http.get('http://localhost:5550/')
-                .then(function(response) {
-                    $scope.message = 'Connected to server: ' + response.data.message;
-                    $scope.error = '';
-                })
-                .catch(function(error) {
-                    $scope.error = 'Cannot connect to server. Make sure it\'s running on port 5550.';
-                    $scope.message = '';
-                });
-            };
-        }]);
-    </script>
+            <!-- Pagination Info -->
+            <div class="text-sm text-gray-600 mb-4 sm:mb-0">
+                Showing {{((pagination.current_page - 1) * pagination.per_page) + 1}} to 
+                {{Math.min(pagination.current_page * pagination.per_page, pagination.total_customers)}} 
+                of {{pagination.total_customers}} customers
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="flex items-center space-x-2">
+                <!-- First Page -->
+                <button 
+                    ng-click="goToPage(1)" 
+                    ng-disabled="pagination.current_page === 1"
+                    class="pagination-btn px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                    ⏮️
+                </button>
+
+                <!-- Previous Page -->
+                <button 
+                    ng-click="goToPage(pagination.current_page - 1)" 
+                    ng-disabled="!pagination.has_prev_page"
+                    class="pagination-btn px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                    ⬅️ Previous
+                </button>
+
+                <!-- Page Numbers -->
+                <div class="hidden sm:flex items-center space-x-1">
+                    <button 
+                        ng-repeat="page in getPageNumbers()" 
+                        ng-click="goToPage(page)"
+                        ng-class="{
+                            'bg-blue-500 text-white': page === pagination.current_page,
+                            'border-gray-300 hover:bg-gray-50': page !== pagination.current_page
+                        }"
+                        class="pagination-btn px-3 py-2 border rounded-md">
+                        {{page}}
+                    </button>
+                </div>
+
+                <!-- Current Page (Mobile) -->
+                <div class="sm:hidden px-3 py-2 border border-gray-300 rounded-md">
+                    {{pagination.current_page}} / {{pagination.total_pages}}
+                </div>
+
+                <!-- Next Page -->
+                <button 
+                    ng-click="goToPage(pagination.current_page + 1)" 
+                    ng-disabled="!pagination.has_next_page"
+                    class="pagination-btn px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                    Next ➡️
+                </button>
+
+                <!-- Last Page -->
+                <button 
+                    ng-click="goToPage(pagination.total_pages)" 
+                    ng-disabled="pagination.current_page === pagination.total_pages"
+                    class="pagination-btn px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                    ⏭️
+                </button>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div ng-if="performance" class="mt-8 bg-gray-100 p-4 rounded-lg text-sm text-gray-600">
+            <strong>Performance:</strong> 
+            Query executed in {{performance.execution_time_ms}}ms using {{performance.method}} | 
+            {{pagination.total_customers}} total customers
+        </div>
+    </div>
+
+    <!-- Include the AngularJS app script -->
+    <script src="js/app.js"></script>
 </body>
 </html>

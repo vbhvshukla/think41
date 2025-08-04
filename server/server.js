@@ -13,7 +13,7 @@ const sampleRoutes = require('./routes/sample');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5550;
+const PORT =  3000;
 
 // Connect to MongoDB
 connectDB();
