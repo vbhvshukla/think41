@@ -146,6 +146,8 @@ const getCustomerByIdFast = async (req, res) => {
     }
 };
 
+
+
 module.exports = {
     getCustomersFast,
     getCustomerByIdFast

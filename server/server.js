@@ -7,6 +7,7 @@ const User = require('./models/User');
 // Import routes
 const customerRoutes = require('./routes/customers');
 const customersFastRoutes = require('./routes/customers-fast');
+const ordersRoutes = require('./routes/orders');
 const sampleRoutes = require('./routes/sample');
 
 require('dotenv').config();
@@ -25,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/api/customers', customerRoutes);
 app.use('/api/customers-fast', customersFastRoutes);
+app.use('/api/orders', ordersRoutes);
 app.use('/api/sample', sampleRoutes);
 
 // In-memory data store (for demo purposes)
@@ -51,6 +53,11 @@ app.get('/', (req, res) => {
       customers_ultra_fast: {
         'GET /api/customers-fast': 'Get all customers with pagination and order count (ULTRA-FAST)',
         'GET /api/customers-fast/:id': 'Get single customer with order details (ULTRA-FAST)'
+      },
+      orders: {
+        'GET /api/orders': 'Get all orders with customer and product details (query: page, limit, status)',
+        'GET /api/orders/customer/:customerId': 'Get customer orders with full product details',
+        'GET /api/orders/analytics': 'Get order summary and analytics'
       },
       sample_data: {
         'POST /api/sample/customers': 'Create sample customers',
