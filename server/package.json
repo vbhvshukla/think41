@@ -1,0 +1,28 @@
+{
+  "name": "think41-server",
+  "version": "1.0.0",
+  "description": "Think41 Server - Node.js backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "1.18.2",
+    "cors": "^2.8.4",
+    "dotenv": "^17.2.1",
+    "express": "4.16.0",
+    "mongoose": "^8.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

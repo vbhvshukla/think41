@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="think41App">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Think41 - AngularJS App</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .user-list {
+            margin-top: 30px;
+        }
+        .user-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body ng-controller="MainController">
+    <div class="container">
+        <h1>Think41 - Simple AngularJS + Node.js App</h1>
+        
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" ng-model="newUser.name" placeholder="Enter your name">
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" ng-model="newUser.email" placeholder="Enter your email">
+        </div>
+        
+        <button ng-click="addUser()">Add User</button>
+        <button ng-click="getUsers()">Get Users from Server</button>
+        
+        <div ng-if="message" class="success">{{message}}</div>
+        <div ng-if="error" class="error">{{error}}</div>
+        
+        <div class="user-list" ng-if="users.length > 0">
+            <h3>Users:</h3>
+            <div ng-repeat="user in users" class="user-item">
+                <strong>{{user.name}}</strong> - {{user.email}}
+                <small ng-if="user.id"> (ID: {{user.id}})</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple AngularJS App
+        angular.module('think41App', [])
+        .controller('MainController', ['$scope', '$http', function($scope, $http) {
+            $scope.users = [];
+            $scope.newUser = {};
+            $scope.message = '';
+            $scope.error = '';
+            
+            // Add user to local list
+            $scope.addUser = function() {
+                if ($scope.newUser.name && $scope.newUser.email) {
+                    $scope.users.push({
+                        name: $scope.newUser.name,
+                        email: $scope.newUser.email
+                    });
+                    $scope.newUser = {};
+                    $scope.message = 'User added to local list!';
+                    $scope.error = '';
+                } else {
+                    $scope.error = 'Please enter both name and email';
+                    $scope.message = '';
+                }
+            };
+            
+            // Get users from server
+            $scope.getUsers = function() {
+                $http.get('http://localhost:5550/')
+                .then(function(response) {
+                    $scope.message = 'Connected to server: ' + response.data.message;
+                    $scope.error = '';
+                })
+                .catch(function(error) {
+                    $scope.error = 'Cannot connect to server. Make sure it\'s running on port 5550.';
+                    $scope.message = '';
+                });
+            };
+        }]);
+    </script>
+</body>
+</html>
